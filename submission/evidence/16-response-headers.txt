@@ -1,0 +1,26 @@
+[
+  {
+    "case": "email",
+    "status": 200,
+    "x-request-id": "req-159d17ae",
+    "x-response-time-ms": "153.05"
+  },
+  {
+    "case": "phone",
+    "status": 200,
+    "x-request-id": "req-7d8ba5db",
+    "x-response-time-ms": "153.20"
+  },
+  {
+    "case": "cccd",
+    "status": 200,
+    "x-request-id": "req-b809fef8",
+    "x-response-time-ms": "152.98"
+  },
+  {
+    "case": "card",
+    "status": 200,
+    "x-request-id": "req-fcc90409",
+    "x-response-time-ms": "153.26"
+  }
+]

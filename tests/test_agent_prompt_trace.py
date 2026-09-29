@@ -5,6 +5,20 @@ from contextlib import contextmanager
 from app import agent as agent_module
 
 
+class RecordingObservation:
+    def __init__(self, observation: dict) -> None:
+        self.observation = observation
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+        return False
+
+    def update(self, **kwargs) -> None:
+        self.observation["updates"] = kwargs
+
+
 class ManagedPrompt:
     version = 3
 
@@ -20,12 +34,18 @@ class RecordingLangfuseClient:
     def __init__(self) -> None:
         self.prompt = ManagedPrompt()
         self.span_updates: list[dict] = []
+        self.observations: list[dict] = []
 
     def get_prompt(self, name: str, **kwargs):
         return self.prompt
 
     def update_current_span(self, **kwargs) -> None:
         self.span_updates.append(kwargs)
+
+    def start_as_current_observation(self, **kwargs):
+        observation = dict(kwargs)
+        self.observations.append(observation)
+        return RecordingObservation(observation)
 
 
 def test_agent_records_prompt_version_with_v4_observation_api(monkeypatch) -> None:
@@ -50,14 +70,14 @@ def test_agent_records_prompt_version_with_v4_observation_api(monkeypatch) -> No
         user_id="student-01",
         feature="qa",
         session_id="session-01",
-        message="Explain traces",
+        message="Contact student@vinuni.edu.vn about traces",
         correlation_id="req-12345678",
     )
 
     span_update = client.span_updates[-1]
     assert span_update["metadata"] == {
         "doc_count": 1,
-        "query_preview": "Explain traces",
+        "query_preview": "Contact [REDACTED_EMAIL] about traces",
         "prompt_name": "day13-chat",
         "prompt_label": "production",
         "prompt_version": "3",
@@ -67,3 +87,19 @@ def test_agent_records_prompt_version_with_v4_observation_api(monkeypatch) -> No
     assert span_update["version"] == "3"
     assert propagated[0]["metadata"]["correlation_id"] == "req-12345678"
     assert propagated[-1]["prompt"] is client.prompt
+
+    retrieval, generation = client.observations
+    assert (retrieval["as_type"], generation["as_type"]) == (
+        "retriever",
+        "generation",
+    )
+    assert retrieval["input"]["query_preview"].endswith("[REDACTED_EMAIL] about traces")
+    assert "student@vinuni.edu.vn" not in str(client.observations)
+    assert generation["model"] == "claude-sonnet-4-5"
+    assert generation["prompt"] is client.prompt
+    assert generation["updates"]["usage_details"]["total"] == (
+        generation["updates"]["usage_details"]["input"]
+        + generation["updates"]["usage_details"]["output"]
+    )
+    assert generation["updates"]["cost_details"]["total"] > 0
+    assert "output_preview" not in generation["updates"]

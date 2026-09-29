@@ -1,0 +1,5 @@
+Langfuse project API name: day13-k4-l3a-2A202602947
+Project ID: cmumgxbul00uzad0er8e65lfm
+Fresh workload: 24 traces with AGENT root and RETRIEVER / GENERATION children.
+Input/output PII detector matches across inspected observations: 0.
+Project name verified after rename. UI screenshots still pending.

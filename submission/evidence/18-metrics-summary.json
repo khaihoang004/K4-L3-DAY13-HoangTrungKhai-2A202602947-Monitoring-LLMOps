@@ -1,0 +1,11 @@
+{
+  "requests": 24,
+  "responses": 24,
+  "p95_ms": 151.85,
+  "ttft_p95_ms": 50.0,
+  "cost_usd": 0.04982099999999999,
+  "retrieval_success_pct": 100.0,
+  "bad_requests": 0,
+  "start": "2026-09-29T16:46:23.390500Z",
+  "end": "2026-09-29T16:46:47.506138Z"
+}
