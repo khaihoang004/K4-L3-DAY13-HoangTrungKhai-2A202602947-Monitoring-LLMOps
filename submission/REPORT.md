@@ -140,10 +140,10 @@ Phần giải thích dưới đây bám theo thay đổi và evidence trong repo
 - [x] Tên project cá nhân đúng mẫu, đã xác minh qua API.
 - [ ] Xác nhận họ tên và Lab Coach đã mở challenge.
 - [x] Bổ sung ảnh `04`, `05`, `06`–`10`, `13`, `14` theo mục 2; không chụp API Keys hoặc metadata chứa key.
-- [ ] Kết quả/evidence thuộc source cuối; tất cả ảnh/links mở được trên GitHub.
-- [ ] Học viên đọc lại và tự xác nhận phần giải thích trong báo cáo.
-- [ ] Kiểm tra staged diff không có `.env`, raw logs, challenge, secrets hoặc PII.
-- [ ] Commit/push repo và nộp URL + SHA trên VLearn LMS/Codelabs.
+- [x] Kết quả/evidence thuộc source cuối; tất cả ảnh/links mở được trên GitHub.
+- [x] Học viên đọc lại và tự xác nhận phần giải thích trong báo cáo.
+- [x] Kiểm tra staged diff không có `.env`, raw logs, challenge, secrets hoặc PII.
+- [x] Commit/push repo và nộp URL + SHA trên VLearn LMS/Codelabs.
 
 **Các bước còn lại để nộp:**
 
