@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -12,7 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "config" / "dashboard.yaml"
-LOG_PATH = ROOT / "data" / "logs.jsonl"
+LOG_PATH = Path(os.getenv("DASHBOARD_LOG_PATH", str(ROOT / "data" / "logs.jsonl")))
 COLORS = ["#087f73", "#d35f45", "#416b9a", "#bf8428"]
 
 st.set_page_config(
@@ -173,12 +174,25 @@ def panel_header(panel: dict, *, unit: str, threshold: str) -> None:
 
 def render_dashboard() -> None:
     now = datetime.now(timezone.utc)
+    historical_end = st.query_params.get("end")
+    if historical_end:
+        try:
+            now = datetime.fromisoformat(historical_end.replace("Z", "+00:00"))
+            if now.tzinfo is None:
+                raise ValueError("Timezone required")
+            now = now.astimezone(timezone.utc)
+        except ValueError:
+            st.error("Use an ISO UTC end time, for example ?end=2026-09-29T10:41:00Z")
+            return
     cutoff = now - timedelta(minutes=time_range)
     source_mtime = LOG_PATH.stat().st_mtime_ns if LOG_PATH.exists() else 0
     records = read_records(str(LOG_PATH), source_mtime)
     frame = pd.DataFrame(
         [record for record in records if cutoff <= record["timestamp"] <= now]
     )
+    session_prefix = st.query_params.get("session_prefix", "")
+    if session_prefix and not frame.empty:
+        frame = frame[frame.get("session_id", pd.Series(index=frame.index, dtype=str)).fillna("").str.startswith(session_prefix)]
     if not frame.empty:
         frame["timestamp"] = pd.to_datetime(frame["timestamp"], utc=True)
 
@@ -188,6 +202,8 @@ def render_dashboard() -> None:
     st.caption(
         f"Local telemetry  ·  Rolling {time_range} minutes  ·  Updated {now.strftime('%H:%M:%S UTC')}  ·  Refresh {refresh_seconds}s"
     )
+    if historical_end:
+        st.info(f"Historical replay · {cutoff.isoformat()} → {now.isoformat()} · Source: {LOG_PATH.name} · Session prefix: {session_prefix or 'all'}")
     st.divider()
 
     response = frame[frame["event"] == "response_sent"] if not frame.empty else frame
@@ -207,7 +223,7 @@ def render_dashboard() -> None:
 
     with left:
         panel = panels["latency"]
-        panel_header(panel, unit=panel["unit"], threshold="P95 <= 3000 ms")
+        panel_header(panel, unit=panel["unit"], threshold="P95 <= 2000 ms")
         if response.empty:
             st.info("No response records in this window.")
         else:
@@ -235,7 +251,7 @@ def render_dashboard() -> None:
         panel_header(panel, unit="USD", threshold="total <= $2.50")
         cumulative_cost = minute_sum(response, "cost_usd", index).cumsum()
         st.altair_chart(
-            line_chart(chart_frame(index, {"Cumulative cost": cumulative_cost}), unit="USD", thresholds=[("60-minute limit", panel["threshold"]["value"])]),
+            line_chart(chart_frame(index, {"Cost/min": minute_sum(response, "cost_usd", index), "Cumulative cost": cumulative_cost}), unit="USD", thresholds=[("60-minute limit", panel["threshold"]["value"])]),
             use_container_width=True,
         )
 
@@ -246,7 +262,9 @@ def render_dashboard() -> None:
         failure_count = minute_count(failures, index)
         request_count = minute_count(requests, index)
         error_rate = failure_count.div(request_count.where(request_count > 0)) * 100
-        tool_records = response[response.get("tool_success", pd.Series(index=response.index, dtype=object)).notna()] if not response.empty else response
+        tool_records = frame[frame.get("tool_success", pd.Series(index=frame.index, dtype=object)).notna()] if not frame.empty else frame
+        tool_records = tool_records.copy()
+        tool_records["tool_success"] = tool_records.get("tool_success", pd.Series(index=tool_records.index, dtype=float))
         retrieval_success = minute_sum(tool_records.assign(_success=tool_records["tool_success"].astype(float)), "_success", index).div(
             minute_count(tool_records, index).where(minute_count(tool_records, index) > 0)
         ) * 100
@@ -284,7 +302,7 @@ def render_dashboard() -> None:
             )
 
     if frame.empty:
-        st.warning(f"No valid JSONL records found in the last {time_range} minutes at {LOG_PATH.relative_to(ROOT)}.")
+        st.warning(f"No valid JSONL records found in the last {time_range} minutes at {LOG_PATH.name}.")
 
 
 @st.fragment(run_every=f"{refresh_seconds}s")

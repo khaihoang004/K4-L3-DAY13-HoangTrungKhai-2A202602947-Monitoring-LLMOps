@@ -21,7 +21,13 @@ Giữ time range mặc định 60 phút, refresh 30 giây và hiển thị thres
 
 1. Hoàn thiện logging/PII và chạy API.
 2. Chạy `python scripts/load_test.py --concurrency 5` để tạo baseline.
-3. Dùng `data/logs.jsonl` làm nguồn chuẩn để tạo đúng sáu panel bằng Streamlit, notebook, Grafana hoặc công cụ tương đương. Langfuse vẫn là nơi mở trace/prompt version để điều tra sâu.
+3. Chạy dashboard local từ repo root:
+
+	```bash
+	streamlit run scripts/dashboard.py
+	```
+
+	App đọc `data/logs.jsonl` và `config/dashboard.yaml`, tự refresh theo config và dựng đúng sáu panel. Nếu cần đổi cổng API cho workload, đặt `BASE_URL`, ví dụ `BASE_URL=http://127.0.0.1:8001 python scripts/load_test.py`. Langfuse vẫn là nơi mở trace/prompt version để điều tra sâu.
 4. Đặt tên panel, đơn vị và threshold giống contract.
 5. Chạy validator:
 
@@ -41,3 +47,12 @@ Validator kiểm tra cấu trúc contract; nó không thể chứng minh biểu 
 6. Tắt incident bằng `python scripts/inject_incident.py --scenario rag_slow --disable`.
 
 Ảnh dashboard phải nhìn được tên panel, time range, đơn vị và threshold. Báo cáo phải dẫn lại trace ID hoặc log line dùng để giải thích thay đổi.
+
+## Xem lại incident đã lưu
+
+Có thể dùng `DASHBOARD_LOG_PATH=data/logs.before-final-<timestamp>.jsonl` để mở
+bản log được lưu trước khi chạy workload cuối. Thêm query string
+`?end=2026-09-29T10:41:00Z&session_prefix=k4-l3a-challenge` để xem cửa sổ
+60 phút kết thúc ở thời điểm incident, lọc đúng session. Dashboard hiển thị
+rõ **Historical replay**, tên nguồn và mốc UTC; không sửa timestamp trong log.
+Không commit file log archive; chỉ nộp evidence đã kiểm tra PII.
