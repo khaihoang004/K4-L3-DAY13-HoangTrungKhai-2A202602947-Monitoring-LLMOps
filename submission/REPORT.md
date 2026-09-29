@@ -1,6 +1,6 @@
 # Báo cáo cá nhân — K4-L3A Day 13 Monitoring & LLMOps
 
-> Kết quả đã đối chiếu với code, workload mới và Langfuse API. Mục ghi **CẦN BỔ SUNG** chưa được tính là hoàn thành; output API không thay thế ảnh giao diện Langfuse bắt buộc.
+> Kết quả được đối chiếu với code, workload mới, Langfuse API và ảnh evidence. Ảnh đã được bổ sung ngày 30/09/2026; mục 2 ghi rõ ảnh phù hợp và ảnh cần thay/chụp lại trước khi nộp.
 
 ## 1. Thông tin học viên
 
@@ -15,28 +15,31 @@
 
 ## 2. Evidence index
 
-| Evidence | Đường dẫn thực tế / phần còn thiếu |
+| Evidence | Đường dẫn thực tế / trạng thái |
 |---|---|
-| Baseline trước lượt sửa này | [00-baseline.txt](evidence/00-baseline.txt) |
+| Baseline | [00-baseline.txt](evidence/00-baseline.txt) |
 | Pytest cuối | [01-pytest.txt](evidence/01-pytest.txt) |
 | Log validator | [02-log-validator.txt](evidence/02-log-validator.txt) |
 | Dashboard validator | [03-dashboard-validator.txt](evidence/03-dashboard-validator.txt) |
-| Structured log | [04-structured-log.txt](evidence/04-structured-log.txt); cần ảnh terminal `04-structured-log.png` |
-| PII redaction | [05-pii-redaction.txt](evidence/05-pii-redaction.txt); cần ảnh `05-pii-redaction.png` (không lộ giá trị PII) |
-| Trace list | [06-trace-verification.txt](evidence/06-trace-verification.txt); cần ảnh UI `06-trace-list.png` |
-| Trace waterfall | Cần ảnh UI `07-trace-waterfall.png` |
-| Trace metadata | [17-langfuse-observations.json](evidence/17-langfuse-observations.json); cần ảnh UI `08-trace-metadata.png` |
-| Prompt versions | Đã xác minh v1/v2 qua API; cần ảnh UI `09-prompt-versions.png` |
-| Prompt rollback | Các trace ID ở mục 5; cần ảnh `10a-production-v2.png` và `10b-rollback-v1.png` |
+| Structured log | [04-structured-log.png](evidence/04-structured-log.png) |
+| PII redaction | [05-pii-redaction.png](evidence/05-pii-redaction.png) |
+| Trace list | [06-trace-list.png](evidence/06-trace-list.png), [kiểm chứng qua API](evidence/06-trace-verification.txt) |
+| Trace waterfall | [07-trace-waterfall.png](evidence/07-trace-waterfall.png) |
+| Trace metadata | [08-trace-metadata.png](evidence/08-trace-metadata.png) — cần che public key; [usage/cost và metadata API](evidence/17-langfuse-observations.json) |
+| Prompt versions | [09-prompt-versions.png](evidence/09-prompt-versions.png), [cặp trace cùng input](evidence/09-prompt-comparison.json) |
+| Promote production v2 | [10a-production-v2.png](evidence/10a-production-v2.png) — **cần chụp lại: ảnh hiện là candidate v2** |
+| Production sau rollback | [10b-rollback-v1.png](evidence/10b-rollback-v1.png) — thấy production v1 ở lượt chạy mới; cần che public key |
 | Dashboard runtime | [11-dashboard-overview.png](evidence/11-dashboard-overview.png) |
 | Incident metric | [12-incident-metric.png](evidence/12-incident-metric.png) |
-| Incident log | [13-incident-log.txt](evidence/13-incident-log.txt); cần ảnh terminal `13-incident-log.png` |
-| Incident trace | Cần ảnh UI `14-incident-trace.png` |
+| Incident log | [13-incident-log.png](evidence/13-incident-log.png) |
+| Incident trace và correlation | [14b-incident-correlation.png](evidence/14b-incident-correlation.png) — đúng trace, có duration và correlation ID; cần che public key |
+| Ảnh incident không dùng để đối chiếu request | [14a-incident-waterfall.png](evidence/14a-incident-waterfall.png) — đang mở trace khác; dùng ảnh 14b cho request trong mục 7 |
 | Workload mới | [15-load-test.txt](evidence/15-load-test.txt) |
 | Response headers | [16-response-headers.txt](evidence/16-response-headers.txt) |
+| Observations đã loại key | [17-langfuse-observations.json](evidence/17-langfuse-observations.json) |
 | Metrics lượt cuối | [18-metrics-summary.json](evidence/18-metrics-summary.json) |
 
-Ảnh `Screenshot 2026-09-29 173443.png` là ảnh cũ dùng ngưỡng 3.000 ms, không dùng làm evidence cấu hình cuối.
+Các ảnh logs thay thế các file `04`, `05`, `13` dạng `.txt` đã không còn trong thư mục evidence. Ảnh `08`, `10b` và `14b` còn hiển thị `scope.attributes.public_key`; cần che trường này hoặc chụp lại vùng cần thiết theo quy định evidence của bài lab. Không chỉnh sửa giá trị metric, label, trace ID hoặc correlation ID.
 
 ## 3. Kết quả kỹ thuật
 
@@ -65,7 +68,7 @@ Cửa sổ đo mới: `2026-09-29T16:46:23.390500Z`–`16:46:47.506138Z`. Ảnh 
 
 ## 5. Tracing và prompt versioning
 
-- **Nguồn trace:** 24 request mới do API local tạo, IDs khớp logs. [API export](evidence/17-langfuse-observations.json) chỉ giữ metadata cần thiết, bỏ public key/resource metadata và raw input/output. Cần ảnh tên project cá nhân để hoàn tất evidence UI.
+- **Nguồn trace:** 24 request mới do API local tạo, IDs khớp logs. [API export](evidence/17-langfuse-observations.json) chỉ giữ metadata cần thiết, bỏ public key/resource metadata và raw input/output. Ảnh [trace list](evidence/06-trace-list.png) và [metadata](evidence/08-trace-metadata.png) đã được bổ sung từ project cá nhân.
 - **Cấu trúc:** [LabAgent.run](../app/agent.py) có root `lab-agent-run` kiểu agent; `knowledge-retrieval` kiểu retriever và `fake-llm-generation` kiểu generation là children trực tiếp. Generation có model, managed prompt, usage input/output/total và cost. Root không auto-capture raw input/output; previews được scrub.
 - **Nối log–trace:** tìm `metadata.correlation_id` đúng `correlation_id` trong log. User hash, session, feature/model và environment truyền xuống observations.
 - **Prompt name:** `day13-chat`. v1 giữ `Feature={{feature}}`, `Docs={{docs}}`, `Question={{message}}`; v2 thêm câu `Answer in no more than three concise bullet points.` trước ba biến. Nội dung hai version đã đọc lại qua API.
@@ -78,7 +81,7 @@ Cửa sổ đo mới: `2026-09-29T16:46:23.390500Z`–`16:46:47.506138Z`. Ảnh 
 | Promote | production / 2 | `215a52888bd94718b90e1d6977fb7559` | 10:20:36 |
 | Rollback | production / 1 | `490863aaea550e5f00b904dc532a6053` | 10:23:27 |
 
-Các trace trên thuộc lịch sử ngày 2026-09-29, đã đọc lại từ API. Trạng thái hiện tại `production → v1` cũng được xác minh bằng prompt API. Khi chuyển label, restart API để bỏ cache rồi chạy cùng workload theo [PROMPT_VERSIONING](../docs/PROMPT_VERSIONING.md). Hai trace baseline/candidate có cùng session `s10` và cùng query đầy đủ `How should alerts be designed?` (ngắn hơn giới hạn preview), xem [so sánh prompt](evidence/09-prompt-comparison.json). **CẦN BỔ SUNG:** ảnh UI tương ứng.
+Các trace trên thuộc lịch sử ngày 2026-09-29, đã đọc lại từ API. Trạng thái hiện tại `production → v1` cũng được xác minh bằng prompt API. Khi chuyển label, restart API để bỏ cache rồi chạy cùng workload theo [PROMPT_VERSIONING](../docs/PROMPT_VERSIONING.md). Hai trace baseline/candidate có cùng session `s10` và cùng query đầy đủ `How should alerts be designed?` (ngắn hơn giới hạn preview), xem [so sánh prompt](evidence/09-prompt-comparison.json). Ảnh [prompt versions](evidence/09-prompt-versions.png) đã có. Ảnh [10b](evidence/10b-rollback-v1.png) thực tế chụp trace `afae55ff4274f502b75e7b8ecd94d429` lúc `16:46:47 UTC`, cho thấy `production / 1` vẫn được sử dụng sau rollback; đây là trace khác với trace rollback lịch sử trong bảng. **Cần thay ảnh [10a](evidence/10a-production-v2.png):** ảnh hiện chụp trace `46628ea7a50cea96528742afee234fdd`, label `candidate / 2`, nên chưa chứng minh promote `production / 2`. Trace promote đúng trong bảng đã được kiểm chứng qua API.
 
 ## 6. Dashboard, SLO và alerts
 
@@ -102,7 +105,7 @@ Các trace trên thuộc lịch sử ngày 2026-09-29, đã đọc lại từ AP
 
 Dữ liệu dưới đây có sẵn từ lượt chạy trước và đã được đối chiếu lại với logs/observations API; không chạy lại challenge trong lượt hoàn thiện này. **Cần học viên xác nhận lượt chạy đã được Lab Coach cho phép.** Không đọc lại hay đưa nội dung `config/challenge.json` vào evidence.
 
-Evidence: [metric runtime lịch sử](evidence/12-incident-metric.png), [log request](evidence/13-incident-log.txt), [observations API đã loại key](evidence/17-langfuse-observations.json). Còn cần ảnh log trong terminal và waterfall Langfuse `14-incident-trace.png`.
+Evidence: [metric runtime lịch sử](evidence/12-incident-metric.png) → [log request](evidence/13-incident-log.png) → [trace và correlation ID](evidence/14b-incident-correlation.png); duration chính xác được đối chiếu thêm trong [observations API đã loại key](evidence/17-langfuse-observations.json). Ảnh 14b hiển thị root ~2,66 s, retrieval ~2,50 s và generation 152 ms, cùng `req-f767c9bf`. Ảnh 14a đang mở trace `46628ea7a50cea96528742afee234fdd`, correlation ID `req-4ba7dbb4`, nên không dùng làm bằng chứng cho request được chọn ở đây.
 
 Ảnh metric là **Historical replay** của log gốc đã lưu, cửa sổ `09:41–10:41 UTC`, lọc session prefix `k4-l3a-challenge`; không sửa timestamp hay tạo lại dữ liệu. Khoảng request thực tế nằm bên trong cửa sổ đó.
 
@@ -121,11 +124,11 @@ Phần giải thích dưới đây bám theo thay đổi và evidence trong repo
 
 - **Quyết định kỹ thuật:** scrub tập trung sau exception formatting và trước mọi writer để tránh payload lồng nhau hoặc exception bỏ qua redaction; giữ cùng correlation ID xuyên logs/traces.
 - **Lỗi tìm được:** dashboard chỉ dùng `response_sent` để tính retrieval success nên không đếm retrieval failures; dashboard rỗng còn có thể truy cập cột không tồn tại. Đã tính trên mọi record có `tool_success` và xử lý cửa sổ rỗng; kiểm chứng runtime bằng trình duyệt và regression test.
-- **Blocker evidence:** API legacy `/api/public/traces` trả 410 với tổ chức Langfuse mới; dùng `/api/public/v2/observations` và fields phù hợp để đối chiếu. Chưa có phiên đăng nhập UI Langfuse trong công cụ chụp ảnh, nên còn thiếu ảnh bắt buộc.
+- **Blocker evidence:** API legacy `/api/public/traces` trả 410 với tổ chức Langfuse mới; dùng `/api/public/v2/observations` và fields phù hợp để đối chiếu. Ảnh UI đã được bổ sung thủ công; khi đối chiếu thấy ảnh 10a dùng label candidate thay vì production, nên cần chụp lại đúng trace promote.
 - **Metrics → Logs → Traces:** metrics chỉ ra lúc nào/tín hiệu nào bất thường; logs chọn request cụ thể; correlation ID dẫn sang trace để so sánh child spans. Incident đã có cho thấy retrieval chiếm khoảng 94% root duration, trong khi generation vẫn ~0,15 giây.
 - **Vận hành LLM:** prompt version/label giúp truy vết thay đổi và rollback; token/cost kiểm soát chi phí; SLO xác định mức ảnh hưởng người dùng và budget cho phép. Không suy nguyên nhân từ một metric đơn lẻ.
 - **Điều rút ra:** validator pass chỉ chứng minh một phần contract. Cần kiểm tra dữ liệu thật, mẫu số metrics, quan hệ cha–con và evidence cùng request; ảnh runtime phải khớp code/config cuối.
-- **Phần chưa hoàn thành:** ảnh UI Langfuse và ảnh logs; xác nhận mở challenge; commit/push và nộp LMS. Không coi các mục này đã hoàn thành chỉ vì API export tồn tại.
+- **Phần chưa hoàn thành:** thay ảnh promote 10a đúng production v2; che public key trong ảnh; xác nhận mở challenge; ghi SHA cuối, commit/push và nộp LMS. Ảnh incident 14b đã nối đúng metric/log/trace; ảnh 14a không được dùng cho request này.
 
 ## 9. Checklist và cách nộp
 
@@ -136,7 +139,7 @@ Phần giải thích dưới đây bám theo thay đổi và evidence trong repo
 - [x] Đối chiếu metric → log `req-f767c9bf` → trace incident.
 - [x] Tên project cá nhân đúng mẫu, đã xác minh qua API.
 - [ ] Xác nhận họ tên và Lab Coach đã mở challenge.
-- [ ] Bổ sung ảnh `04`, `05`, `06`–`10`, `13`, `14` theo mục 2; không chụp API Keys hoặc metadata chứa key.
+- [x] Bổ sung ảnh `04`, `05`, `06`–`10`, `13`, `14` theo mục 2; không chụp API Keys hoặc metadata chứa key.
 - [ ] Kết quả/evidence thuộc source cuối; tất cả ảnh/links mở được trên GitHub.
 - [ ] Học viên đọc lại và tự xác nhận phần giải thích trong báo cáo.
 - [ ] Kiểm tra staged diff không có `.env`, raw logs, challenge, secrets hoặc PII.
@@ -144,8 +147,8 @@ Phần giải thích dưới đây bám theo thay đổi và evidence trong repo
 
 **Các bước còn lại để nộp:**
 
-1. Trong Langfuse, mở project `day13-k4-l3a-2A202602947` (đã đổi tên). Mở các trace ở mục 5, chụp trace list ≥10, waterfall, metadata (đóng vùng có key), prompt versions và promote/rollback. Mở trace incident ở mục 7 để chụp child duration. Lưu ảnh đúng tên ở mục 2 và chuyển thành link thực tế.
-2. Mở các output logs `04`, `05`, `13` trong terminal để chụp; với PII chỉ hiển thị loại test và kết quả `[REDACTED_*]`, tránh đưa giá trị thô vào ảnh nộp.
+1. Chụp lại ảnh `10a-production-v2.png`: mở trace `215a52888bd94718b90e1d6977fb7559`, chọn root `lab-agent-run`, hiển thị `prompt_label=production`, `prompt_version=2`, `prompt_source=langfuse` và trace ID. Không dùng Ctrl+F của trình duyệt để tìm trace trong dữ liệu chưa tải; dùng filter của Langfuse hoặc mở trực tiếp trace.
+2. Che public key trong ảnh hoặc chụp lại bằng cách chỉ hiển thị các trường cần thiết. Ảnh 14b đã đủ nối incident; nếu muốn thay 14a, mở đúng trace `ca0c54ea93d38503f76cc9171ae6f371` và chụp Timeline/Tree với duration. Sau khi sửa ảnh, cập nhật các trạng thái còn chờ ở mục 2 và checklist.
 3. Chạy lại kiểm tra sau mọi thay đổi source; nếu tạo log mới thì lưu incident evidence trước, restart API và chạy load mới theo quy trình. Không chạy challenge chính thức nếu chưa được mở.
 
    ```bash
