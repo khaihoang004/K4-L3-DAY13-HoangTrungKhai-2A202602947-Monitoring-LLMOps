@@ -3,11 +3,22 @@ primary_slo:
   name: fast_successful_requests
   window: 28d
   sli:
-    good_event: 'event == "response_sent" and latency_ms <= 3000'
+    good_event: 'event == "response_sent" and latency_ms <= 2000'
     total_event: 'event == "request_received"'
   target_percent: 99.5
   error_budget_percent: 0.5
-  note: Học viên phải giải thích hoặc điều chỉnh ngưỡng bằng baseline của mình.
+  error_budget:
+    bad_request_ratio: 0.005
+    allowed_bad_requests_per_1000: 5
+    equivalent_availability_minutes: 201.6
+  note: >-
+    A 99.5% request-based SLO allows 0.5% bad requests (5 per 1,000) in each
+    rolling 28-day window. 201.6 minutes is the wall-clock equivalent only when
+    interpreting the same budget as continuous availability, not a second SLI.
+  rationale: >-
+    The 2-second threshold is an actionable user-visible latency objective and
+    is above the healthy fake-LLM baseline while still exposing the injected
+    retrieval-delay scenario.
 guardrails:
   error_rate_pct_max: 2
   daily_cost_usd_max: 2.5

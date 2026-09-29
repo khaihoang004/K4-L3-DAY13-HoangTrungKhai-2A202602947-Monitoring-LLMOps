@@ -9,3 +9,6 @@ data/audit.jsonl
 config/challenge.json
 .pytest_cache/
 .antigravity/
+
+# Local telemetry archives may contain baseline PII.
+data/logs.*.jsonl

@@ -6,6 +6,7 @@ dashboard:
   panels:
     - id: latency
       title: Latency percentiles and TTFT
+      time_range_minutes: 60
       source: data/logs.jsonl
       events: [response_sent]
       fields: [latency_ms, ttft_ms]
@@ -15,10 +16,11 @@ dashboard:
       threshold:
         aggregation: p95
         operator: lte
-        value: 3000
+        value: 2000
 
     - id: traffic
       title: Request traffic
+      time_range_minutes: 60
       source: data/logs.jsonl
       events: [request_received]
       fields: [event]
@@ -32,8 +34,9 @@ dashboard:
 
     - id: errors
       title: Error rate and retrieval success
+      time_range_minutes: 60
       source: data/logs.jsonl
-      events: [request_received, request_failed]
+      events: [request_received, request_failed, response_sent]
       fields: [error_type, tool_name, tool_success]
       aggregations: [error_rate_pct, count_by_value, tool_success_rate_pct]
       query: 'count(event == "request_failed") / count(event == "request_received") * 100; count_by(error_type); count(tool_success == true) / count(tool_success != null) * 100'
@@ -45,6 +48,7 @@ dashboard:
 
     - id: cost
       title: Cost over time
+      time_range_minutes: 60
       source: data/logs.jsonl
       events: [response_sent]
       fields: [cost_usd]
@@ -58,6 +62,7 @@ dashboard:
 
     - id: tokens
       title: Input and output tokens
+      time_range_minutes: 60
       source: data/logs.jsonl
       events: [response_sent]
       fields: [tokens_in, tokens_out]
@@ -71,6 +76,7 @@ dashboard:
 
     - id: quality
       title: Quality proxy
+      time_range_minutes: 60
       source: data/logs.jsonl
       events: [response_sent]
       fields: [quality_score]
